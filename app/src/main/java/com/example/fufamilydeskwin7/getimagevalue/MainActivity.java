@@ -140,12 +140,7 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
             floor.setChecked(false);
             people.setChecked(false);
             pillar.setChecked(false);
-            /*
-            completeseton = false;
-            flooron = false;
-            peopleon = false;
-            pillaron = false;
-            doimage.setEnabled(false);*/
+
             Log.i(TAG, "Intent: requestCode " + String.valueOf(requestCode));
             Log.i(TAG, "Intent: resultCode "+String.valueOf(resultCode));
             Log.i(TAG, "Intent: data "+String.valueOf(data));
@@ -295,7 +290,7 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
 
         Log.i(TAG, "all put OK");
         db.insert(DBTABLE_NAME, null, values);
-        //db.close();
+
     }
     private void dbclose() {
         Log.i(TAG, "dbclose()");
