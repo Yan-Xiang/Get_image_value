@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         people.setOnCheckedChangeListener(this);
         pillar.setOnCheckedChangeListener(this);
 
-        doimage.setEnabled(false);
+//        doimage.setEnabled(false);
         buttonImage.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View view) {
 /*
@@ -433,13 +433,21 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
             Imgproc.Canny(hsv_h_canny, hsv_h_canny, 80, 100);
             Imgproc.cvtColor(hsv_h_canny,hsv_h_canny,Imgproc.COLOR_GRAY2BGRA);
             Mat sobel = new Mat();
-            sobel=addone_imageprocess.sobel(halforg);
-
-
+            sobel = addone_imageprocess.sobel_gray(halforg);
+            Mat sobelrgb = new Mat();
+            Imgproc.cvtColor(sobel, sobelrgb, Imgproc.COLOR_GRAY2BGRA);
+            Mat erode = new Mat();
+            erode = addone_imageprocess.erode(sobel);
+            Mat erodergb = new Mat();
+            Imgproc.cvtColor(erode, erodergb, Imgproc.COLOR_GRAY2BGRA);
+            Mat dilate = new Mat();
+            dilate = addone_imageprocess.dilate(erode);
+            Mat dilatergb = new Mat();
+            Imgproc.cvtColor(dilate, dilatergb, Imgproc.COLOR_GRAY2BGRA);
             //============================================================
 
             Log.i(TAG, "hconcat: star new list");
-            List<Mat> src = Arrays.asList(hsv_h,hsv_s,hsv_v,rgbcuthsv_s,G7_C80100, G11_C80100, hsv_h_canny, sobel );
+            List<Mat> src = Arrays.asList(hsv_h, hsv_s, hsv_v, rgbcuthsv_s, G7_C80100, G11_C80100, hsv_h_canny, sobelrgb, erodergb, dilatergb);
             Log.i(TAG, "hconcat: do hconcat");
             Core.hconcat(src, dst);
             Log.i(TAG, "hconcat: finish!");
@@ -453,6 +461,8 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
 
 //            dbhelper.close();
             dbclose();
+
+
         }
 
 //        if (v == clearbtn) {
@@ -524,11 +534,11 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
                 if (isChecked) {
                     // The toggle is enabled
                     completeseton=true;
-                    doimage.setEnabled(true);
+//                    doimage.setEnabled(true);
                 } else {
                     // The toggle is disabled
                     completeseton = false;
-                    doimage.setEnabled(false);
+//                    doimage.setEnabled(false);
                 }
                 break;
             case R.id.floor:
