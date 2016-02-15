@@ -428,11 +428,18 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
 
 
             //============================================================
-//            Mat space =  Mat.zeros(halforg.width(), halforg.height(), CvType.CV_8UC1);
-//            Imgproc.cvtColor(space, space, Imgproc.COLOR_GRAY2RGBA);
+            Mat hsv_h_canny = new Mat();
+            Imgproc.GaussianBlur(hsv_h, hsv_h_canny, new Size(3, 3), 3, 3);
+            Imgproc.Canny(hsv_h_canny, hsv_h_canny, 80, 100);
+            Imgproc.cvtColor(hsv_h_canny,hsv_h_canny,Imgproc.COLOR_GRAY2BGRA);
+            Mat sobel = new Mat();
+            sobel=addone_imageprocess.sobel(halforg);
+
+
+            //============================================================
 
             Log.i(TAG, "hconcat: star new list");
-            List<Mat> src = Arrays.asList(hsv_h,hsv_s,hsv_v,rgbcuthsv_s,G7_C80100, G11_C80100 );
+            List<Mat> src = Arrays.asList(hsv_h,hsv_s,hsv_v,rgbcuthsv_s,G7_C80100, G11_C80100, hsv_h_canny, sobel );
             Log.i(TAG, "hconcat: do hconcat");
             Core.hconcat(src, dst);
             Log.i(TAG, "hconcat: finish!");
