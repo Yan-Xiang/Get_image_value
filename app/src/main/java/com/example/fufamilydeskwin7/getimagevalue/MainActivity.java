@@ -51,8 +51,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "OCVSample::Activity";
     private Button clearbtn, doimage;
     private ToggleButton completeset, floor, people, pillar;
-    private ImageView orgimage, outimage,orgsubimage;
-    private Bitmap orgbm,bitmap;
+    private ImageView orgimage, outimage, orgsubimage, outimage2;
+    private Bitmap orgbm, bitmap;
     private int cannycount1;
     private TextView countT;
     private Mat orgimageMat;
@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         orgimage = (ImageView) findViewById(R.id.orgimage);
         orgsubimage = (ImageView) findViewById(R.id.orgsubimage);
         outimage = (ImageView) findViewById(R.id.outputimage);
+        outimage2 = (ImageView) findViewById(R.id.outputimage2);
         countT = (TextView) findViewById(R.id.valuetxt);
 //        clearbtn = (Button) findViewById(R.id.clear);
         doimage = (Button) findViewById(R.id.starbtn);
@@ -346,7 +347,7 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
 //        Mat halforg = new Mat();                                                //原圖的子集合 不能修改
 
         if (v==doimage) {
-            valuetext.append("hsv_h,hsv_s,hsv_v,rgbcuthsv_s,G7_C80100, G11_C80100\n\n");
+            valuetext.append("hsv_h,hsv_s,hsv_v,rgbcuthsv_s,G7_C80100, G11_C80100\nhsv_h_canny, sobelrgb, erodergb, dilatergb, tile_sobelXYrgb, tilergb\n\n");
             valuetext.append("Data ID : ").append(Dataname).append("\n");
             //HSV---------------------------------------------------------------------------
             Log.i(TAG, "HSV: star");
@@ -365,7 +366,7 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
             //多層矩陣轉換成幾個單一矩陣
             Core.extractChannel(hsv, hsv_s, 1);
             Log.i(TAG, "HSV: do mask");
-            Core.inRange(hsv_s, new Scalar(76), new Scalar(255), mask_s);
+            Core.inRange(hsv_s, new Scalar(100), new Scalar(256), mask_s);//76~255
             Log.i(TAG, "HSV: copy to");
 
             hsv_s.copyTo(hsv_s, mask_s); //將原圖片經由遮罩過濾後，得到結果dst
@@ -431,27 +432,76 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
             Mat hsv_h_canny = new Mat();
             Imgproc.GaussianBlur(hsv_h, hsv_h_canny, new Size(3, 3), 3, 3);
             Imgproc.Canny(hsv_h_canny, hsv_h_canny, 80, 100);
-            Imgproc.cvtColor(hsv_h_canny,hsv_h_canny,Imgproc.COLOR_GRAY2BGRA);
-            Mat sobel = new Mat();
-            sobel = addone_imageprocess.sobel_gray(halforg);
-            Mat sobelrgb = new Mat();
-            Imgproc.cvtColor(sobel, sobelrgb, Imgproc.COLOR_GRAY2BGRA);
-            Mat erode = new Mat();
-            erode = addone_imageprocess.erode(sobel);
-            Mat erodergb = new Mat();
-            Imgproc.cvtColor(erode, erodergb, Imgproc.COLOR_GRAY2BGRA);
-            Mat dilate = new Mat();
-            dilate = addone_imageprocess.dilate(erode);
-            Mat dilatergb = new Mat();
-            Imgproc.cvtColor(dilate, dilatergb, Imgproc.COLOR_GRAY2BGRA);
+            Imgproc.cvtColor(hsv_h_canny, hsv_h_canny, Imgproc.COLOR_GRAY2BGRA);
+
+            Mat sobel_Y = new Mat();
+            sobel_Y = addone_imageprocess.sobel_outputgray_Y(halforg);
+            Mat sobel_Y_rgb = new Mat();
+            Imgproc.cvtColor(sobel_Y, sobel_Y_rgb, Imgproc.COLOR_GRAY2BGRA);
+            Mat erode_Y = new Mat();
+            erode_Y = addone_imageprocess.erode_Y(sobel_Y);
+            Mat erode_Y_rgb = new Mat();
+            Imgproc.cvtColor(erode_Y, erode_Y_rgb, Imgproc.COLOR_GRAY2BGRA);
+            Mat dilate_Y = new Mat();
+            dilate_Y = addone_imageprocess.dilate_Y(erode_Y);
+            Mat dilate_Y_rgb = new Mat();
+            Imgproc.cvtColor(dilate_Y, dilate_Y_rgb, Imgproc.COLOR_GRAY2BGRA);
+
+            Mat sobel_X = new Mat();
+            sobel_X = addone_imageprocess.sobel_outputgray_X(halforg);
+            Mat sobel_X_rgb = new Mat();
+            Imgproc.cvtColor(sobel_X, sobel_X_rgb, Imgproc.COLOR_GRAY2BGRA);
+            Mat erode_X = new Mat();
+            erode_X = addone_imageprocess.erode_X(sobel_X);
+            Mat erode_X_rgb = new Mat();
+            Imgproc.cvtColor(erode_X, erode_X_rgb, Imgproc.COLOR_GRAY2BGRA);
+            Mat dilate_X = new Mat();
+            dilate_X = addone_imageprocess.dilate_X(erode_X);
+            Mat dilate_X_rgb = new Mat();
+            Imgproc.cvtColor(dilate_X, dilate_X_rgb, Imgproc.COLOR_GRAY2BGRA);
+
+
+            Mat tile_sobelXY = new Mat();
+            Mat tile = new Mat();
+            Imgproc.cvtColor(halforg, tile_sobelXY, Imgproc.COLOR_RGB2GRAY);
+            Mat grayrgb = new Mat();
+            Mat graymask = new Mat();
+//            Core.inRange(tile_sobelXY,new Scalar(245), new Scalar(255), graymask);
+            Imgproc.cvtColor(tile_sobelXY, grayrgb, Imgproc.COLOR_GRAY2BGRA);
+
+            tile_sobelXY = addone_imageprocess.sobel_outputgray_XY_noGaussianBlur(tile_sobelXY);
+            Mat tile_sobelXYrgb = new Mat();
+            Imgproc.cvtColor(tile_sobelXY, tile_sobelXYrgb, Imgproc.COLOR_GRAY2BGRA);
+
+            tile = addone_imageprocess.Tile_dilate(tile_sobelXY);
+            Mat tile_dilatergb = new Mat();
+            Imgproc.cvtColor(tile, tile_dilatergb, Imgproc.COLOR_GRAY2BGRA);
+            tile = addone_imageprocess.Tile_erode(tile);
+            Mat tile_erodergb = new Mat();
+            Imgproc.cvtColor(tile, tile_erodergb, Imgproc.COLOR_GRAY2BGRA);
+
+            tile = addone_imageprocess.Tile_dilate2(tile);
+
+            tile = addone_imageprocess.Tile_erode2(tile);
+            Mat tile_2rgb = new Mat();
+            Imgproc.cvtColor(tile, tile_2rgb, Imgproc.COLOR_GRAY2BGRA);
+
+
+            Mat bodyhsv_rgb = addone_imageprocess.body_hsv(halforg);
+            Mat bodyrgb_rgb = addone_imageprocess.body_rgb(halforg);
             //============================================================
 
             Log.i(TAG, "hconcat: star new list");
-            List<Mat> src = Arrays.asList(hsv_h, hsv_s, hsv_v, rgbcuthsv_s, G7_C80100, G11_C80100, hsv_h_canny, sobelrgb, erodergb, dilatergb);
+            List<Mat> src = Arrays.asList(hsv_h, hsv_s, hsv_v, rgbcuthsv_s, G7_C80100, G11_C80100);
             Log.i(TAG, "hconcat: do hconcat");
             Core.hconcat(src, dst);
             Log.i(TAG, "hconcat: finish!");
             countT.setText(valuetext);
+
+            List<Mat> src2 = Arrays.asList(grayrgb, sobel_Y_rgb,  dilate_Y_rgb, sobel_X_rgb,  dilate_X_rgb, bodyhsv_rgb, bodyrgb_rgb);//tile_sobelXYrgb, tile_dilatergb, tile_erodergb, tile_2rgb);
+            Mat dst2 = new Mat();
+            Core.hconcat(src2, dst2);
+
 //            dbhelper = new DBHelper(this);
             add();
             Log.i(TAG, "add() OK!");
@@ -463,6 +513,15 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
             dbclose();
 
 
+            bitmap = Bitmap.createBitmap(dst.width(), dst.height(), Bitmap.Config.ARGB_8888);
+            Log.i(TAG, "Finish: bitmap set OK");
+            Utils.matToBitmap(dst, bitmap);
+            Log.i(TAG, "Finish: set image");
+            outimage.setImageBitmap(bitmap);
+
+            bitmap = Bitmap.createBitmap(dst2.width(), dst2.height(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(dst2, bitmap);
+            outimage2.setImageBitmap(bitmap);
         }
 
 //        if (v == clearbtn) {
@@ -521,11 +580,8 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
 ////        else {
 ////            outimage.setImageBitmap(null);
 ////        }
-        bitmap = Bitmap.createBitmap(dst.width(), dst.height(), Bitmap.Config.ARGB_8888);
-        Log.i(TAG, "Finish: bitmap set OK");
-        Utils.matToBitmap(dst, bitmap);
-        Log.i(TAG, "Finish: set image");
-        outimage.setImageBitmap(bitmap);
+
+
     }
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

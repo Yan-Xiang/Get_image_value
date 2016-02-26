@@ -148,17 +148,25 @@
         android:id="@+id/outputimage"
         android:layout_weight="1" />
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:id="@+id/outputimage2"
+        android:layout_weight="1"
+        android:layout_gravity="center_horizontal" />
+
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="1">
+        android:layout_weight="0.5">
 
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/scrollView" >
+            android:id="@+id/scrollView"
+            android:fillViewport="false">
 
             <TextView
                 android:layout_width="wrap_content"
