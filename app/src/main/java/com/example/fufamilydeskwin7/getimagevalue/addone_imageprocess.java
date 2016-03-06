@@ -221,7 +221,7 @@ public class addone_imageprocess {
         return bodyrgb;
     }
 
-    public static Mat getcol(Mat img, int number) {
+    public static Mat getcol(Mat img, int number) {//垂直
         Mat outputcol = img.col(number);
 
         return outputcol;
