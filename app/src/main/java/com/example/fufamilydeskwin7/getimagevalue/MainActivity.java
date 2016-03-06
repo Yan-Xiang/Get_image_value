@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "OCVSample::Activity";
     private Button clearbtn, doimage;
     private ToggleButton completeset, floor, people, pillar;
-    private ImageView orgimage, outimage, orgsubimage, outimage2;
+    private ImageView orgimage, outimage, orgsubimage, outimage2, rowimg;
     private Bitmap orgbm, bitmap;
     private int cannycount1;
     private TextView countT;
@@ -84,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         orgsubimage = (ImageView) findViewById(R.id.orgsubimage);
         outimage = (ImageView) findViewById(R.id.outputimage);
         outimage2 = (ImageView) findViewById(R.id.outputimage2);
+        rowimg = (ImageView) findViewById(R.id.rowimg);
         countT = (TextView) findViewById(R.id.valuetxt);
 //        clearbtn = (Button) findViewById(R.id.clear);
         doimage = (Button) findViewById(R.id.starbtn);
@@ -368,7 +369,7 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
             Log.i(TAG, "HSV: do mask");
             Core.inRange(hsv_s, new Scalar(100), new Scalar(256), mask_s);//76~255
             Log.i(TAG, "HSV: copy to");
-
+            mask_s = addone_imageprocess.hsv_s_erode_dilate(mask_s);
             hsv_s.copyTo(hsv_s, mask_s); //將原圖片經由遮罩過濾後，得到結果dst
             Imgproc.cvtColor(hsv_s, hsv_s, Imgproc.COLOR_GRAY2RGBA);
             Log.i(TAG, "HSV: finish!");
@@ -447,16 +448,13 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
             Mat dilate_Y_rgb = new Mat();
             Imgproc.cvtColor(dilate_Y, dilate_Y_rgb, Imgproc.COLOR_GRAY2BGRA);
 
-            Mat sobel_X = new Mat();
-            sobel_X = addone_imageprocess.sobel_outputgray_X(halforg);
+            Mat sobel_X = addone_imageprocess.sobel_outputgray_X(halforg);
             Mat sobel_X_rgb = new Mat();
             Imgproc.cvtColor(sobel_X, sobel_X_rgb, Imgproc.COLOR_GRAY2BGRA);
-            Mat erode_X = new Mat();
-            erode_X = addone_imageprocess.erode_X(sobel_X);
+            Mat erode_X = addone_imageprocess.erode_X(sobel_X);
             Mat erode_X_rgb = new Mat();
             Imgproc.cvtColor(erode_X, erode_X_rgb, Imgproc.COLOR_GRAY2BGRA);
-            Mat dilate_X = new Mat();
-            dilate_X = addone_imageprocess.dilate_X(erode_X);
+            Mat dilate_X = addone_imageprocess.dilate_X(erode_X);
             Mat dilate_X_rgb = new Mat();
             Imgproc.cvtColor(dilate_X, dilate_X_rgb, Imgproc.COLOR_GRAY2BGRA);
 
@@ -489,6 +487,18 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
 
             Mat bodyhsv_rgb = addone_imageprocess.body_hsv(halforg);
             Mat bodyrgb_rgb = addone_imageprocess.body_rgb(halforg);
+
+            Mat arow = addone_imageprocess.getcol(dilate_Y, 50);
+            Mat arow_rgb = new Mat();
+            Imgproc.cvtColor(arow,arow_rgb, Imgproc.COLOR_GRAY2BGRA);
+
+
+            Mat Y_imgrgb = new Mat();
+            Y_imgrgb = addone_imageprocess.sobel_outputgray_Y_complet(halforg);
+            Imgproc.cvtColor(Y_imgrgb, Y_imgrgb, Imgproc.COLOR_GRAY2BGRA);
+            Mat X_imgrgb = new Mat();
+            X_imgrgb = addone_imageprocess.sobel_outputgray_X_complet(halforg);
+            Imgproc.cvtColor(X_imgrgb, X_imgrgb, Imgproc.COLOR_GRAY2BGRA);
             //============================================================
 
             Log.i(TAG, "hconcat: star new list");
@@ -498,7 +508,7 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
             Log.i(TAG, "hconcat: finish!");
             countT.setText(valuetext);
 
-            List<Mat> src2 = Arrays.asList(grayrgb, sobel_Y_rgb,  dilate_Y_rgb, sobel_X_rgb,  dilate_X_rgb, bodyhsv_rgb, bodyrgb_rgb);//tile_sobelXYrgb, tile_dilatergb, tile_erodergb, tile_2rgb);
+            List<Mat> src2 = Arrays.asList(tile_dilatergb, tile_2rgb ,  dilate_Y_rgb,  dilate_X_rgb, bodyhsv_rgb, Y_imgrgb, X_imgrgb);//tile_sobelXYrgb, tile_dilatergb, tile_erodergb, tile_2rgb);
             Mat dst2 = new Mat();
             Core.hconcat(src2, dst2);
 
@@ -522,6 +532,11 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
             bitmap = Bitmap.createBitmap(dst2.width(), dst2.height(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(dst2, bitmap);
             outimage2.setImageBitmap(bitmap);
+
+            Imgproc.resize(arow_rgb, arow_rgb, new Size(10, 240));
+            bitmap = Bitmap.createBitmap(arow_rgb.width(), arow_rgb.height(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(arow_rgb, bitmap);
+            rowimg.setImageBitmap(bitmap);
         }
 
 //        if (v == clearbtn) {

@@ -134,7 +134,13 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:id="@+id/orgsubimage"
-            android:layout_weight="0.65" />
+            android:layout_weight="0.6" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:id="@+id/rowimg"
+            android:layout_weight="0.3" />
     </LinearLayout>
 
     <TextView android:text="處理結果" android:layout_width="wrap_content"
@@ -163,10 +169,11 @@
         android:layout_weight="0.5">
 
         <ScrollView
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:id="@+id/scrollView"
-            android:fillViewport="false">
+            android:fillViewport="false"
+            android:layout_weight="1">
 
             <TextView
                 android:layout_width="wrap_content"
