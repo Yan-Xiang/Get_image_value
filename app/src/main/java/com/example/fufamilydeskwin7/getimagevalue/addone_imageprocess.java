@@ -12,6 +12,9 @@ import org.opencv.imgproc.Imgproc;
  * Created by fufamilyDeskWin7 on 2016/2/15.
  */
 public class addone_imageprocess {
+
+     String TAG = "debug";
+
     public static Mat sobel_outputgray_Y_complet(Mat img) {
         Mat tmp = new Mat();
         Imgproc.cvtColor(img, tmp, Imgproc.COLOR_RGB2GRAY);
@@ -225,6 +228,38 @@ public class addone_imageprocess {
         Mat outputcol = img.col(number);
 
         return outputcol;
+    }
+
+    public static Mat HoughLines(Mat img) {
+        Mat G7_C80100 = new Mat();
+        Imgproc.GaussianBlur(img, G7_C80100, new Size(7, 7), 3, 3);
+        Imgproc.Canny(G7_C80100, G7_C80100, 80, 100);
+
+//        Mat lines = new Mat();
+//        Imgproc.HoughLines(G7_C80100, lines, 5.0, 4.0, 7);
+//        return lines;
+
+        Mat lines = new Mat();
+        int threshold = 40;
+        int minLineSize = 20;
+        int lineGap = 10;
+
+        Imgproc.HoughLinesP(G7_C80100, lines, 1, Math.PI/180, threshold, minLineSize, lineGap);
+
+        for (int x = 0; x < lines.cols(); x++)
+        {
+            double[] vec = lines.get(0, x);
+            double x1 = vec[0],
+                    y1 = vec[1],
+                    x2 = vec[2],
+                    y2 = vec[3];
+            Point start = new Point(x1, y1);
+            Point end = new Point(x2, y2);
+
+            Core.line(img, start, end, new Scalar(0,255,0), 2);
+
+        }
+        return img;
     }
 
 }

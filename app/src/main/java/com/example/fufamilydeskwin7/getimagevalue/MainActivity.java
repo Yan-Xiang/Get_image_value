@@ -477,9 +477,7 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
             tile = addone_imageprocess.Tile_erode(tile);
             Mat tile_erodergb = new Mat();
             Imgproc.cvtColor(tile, tile_erodergb, Imgproc.COLOR_GRAY2BGRA);
-
             tile = addone_imageprocess.Tile_dilate2(tile);
-
             tile = addone_imageprocess.Tile_erode2(tile);
             Mat tile_2rgb = new Mat();
             Imgproc.cvtColor(tile, tile_2rgb, Imgproc.COLOR_GRAY2BGRA);
@@ -533,9 +531,14 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
             Utils.matToBitmap(dst2, bitmap);
             outimage2.setImageBitmap(bitmap);
 
-            Imgproc.resize(arow_rgb, arow_rgb, new Size(10, 240));
-            bitmap = Bitmap.createBitmap(arow_rgb.width(), arow_rgb.height(), Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(arow_rgb, bitmap);
+//            Imgproc.resize(arow_rgb, arow_rgb, new Size(10, 240));
+//            bitmap = Bitmap.createBitmap(arow_rgb.width(), arow_rgb.height(), Bitmap.Config.ARGB_8888);
+//            Utils.matToBitmap(arow_rgb, bitmap);
+//            rowimg.setImageBitmap(bitmap);
+
+            Mat getline = addone_imageprocess.HoughLines(halforg);
+            bitmap = Bitmap.createBitmap(getline.width(), getline.height(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(getline, bitmap);
             rowimg.setImageBitmap(bitmap);
         }
 
