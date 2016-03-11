@@ -183,6 +183,20 @@
                 android:textSize="10sp" />
         </ScrollView>
 
+        <SeekBar
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/seekBar"
+            android:layout_weight="1"
+            android:indeterminate="false" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/barvalue"
+            android:layout_weight="0.15" />
+
     </LinearLayout>
 
 </LinearLayout>

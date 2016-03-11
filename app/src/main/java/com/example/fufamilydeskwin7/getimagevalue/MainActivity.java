@@ -18,6 +18,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -53,8 +54,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ToggleButton completeset, floor, people, pillar;
     private ImageView orgimage, outimage, orgsubimage, outimage2, rowimg;
     private Bitmap orgbm, bitmap;
-    private int cannycount1;
-    private TextView countT;
+    private int cannycount1, changevalue;
+    private TextView countT, barvalue;
     private Mat orgimageMat;
     private Mat halforg;
     private Uri uri;
@@ -67,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String Dataname;
     private int HSV_Spoint_value, G7_C80100point_value, G11_C80100point_value;
     private Boolean completeseton ,flooron ,peopleon ,pillaron;
+    private SeekBar contralvalue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,13 +91,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        clearbtn = (Button) findViewById(R.id.clear);
         doimage = (Button) findViewById(R.id.starbtn);
         Button buttonImage = (Button) findViewById(R.id.inputimagebtn);
-       completeset = (ToggleButton) findViewById(R.id.completeset);
-       floor = (ToggleButton) findViewById(R.id.floor);
-       people = (ToggleButton) findViewById(R.id.people);
-       pillar = (ToggleButton) findViewById(R.id.pillar);
-
-
-
+        completeset = (ToggleButton) findViewById(R.id.completeset);
+        floor = (ToggleButton) findViewById(R.id.floor);
+        people = (ToggleButton) findViewById(R.id.people);
+        pillar = (ToggleButton) findViewById(R.id.pillar);
+        contralvalue = (SeekBar) findViewById(R.id.seekBar);
+        barvalue = (TextView) findViewById(R.id.barvalue);
 
 
 //        clearbtn.setOnClickListener(this);
@@ -104,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         floor.setOnCheckedChangeListener(this);
         people.setOnCheckedChangeListener(this);
         pillar.setOnCheckedChangeListener(this);
+
 
 //        doimage.setEnabled(false);
         buttonImage.setOnClickListener(new Button.OnClickListener() {
@@ -126,6 +128,30 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
             }
         });
         Log.i(TAG, "onCreate: leave onCreate");
+
+        contralvalue.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                //SeekBar改變時做的動作
+                String s= String.valueOf(progress);
+                if (seekBar==contralvalue) {
+                    barvalue.setText(s);
+                    changevalue = progress;
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
     }
 
     @Override
@@ -430,73 +456,73 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
 
 
             //============================================================
-            Mat hsv_h_canny = new Mat();
-            Imgproc.GaussianBlur(hsv_h, hsv_h_canny, new Size(3, 3), 3, 3);
-            Imgproc.Canny(hsv_h_canny, hsv_h_canny, 80, 100);
-            Imgproc.cvtColor(hsv_h_canny, hsv_h_canny, Imgproc.COLOR_GRAY2BGRA);
-
-            Mat sobel_Y = new Mat();
-            sobel_Y = addone_imageprocess.sobel_outputgray_Y(halforg);
-            Mat sobel_Y_rgb = new Mat();
-            Imgproc.cvtColor(sobel_Y, sobel_Y_rgb, Imgproc.COLOR_GRAY2BGRA);
-            Mat erode_Y = new Mat();
-            erode_Y = addone_imageprocess.erode_Y(sobel_Y);
-            Mat erode_Y_rgb = new Mat();
-            Imgproc.cvtColor(erode_Y, erode_Y_rgb, Imgproc.COLOR_GRAY2BGRA);
-            Mat dilate_Y = new Mat();
-            dilate_Y = addone_imageprocess.dilate_Y(erode_Y);
-            Mat dilate_Y_rgb = new Mat();
-            Imgproc.cvtColor(dilate_Y, dilate_Y_rgb, Imgproc.COLOR_GRAY2BGRA);
-
-            Mat sobel_X = addone_imageprocess.sobel_outputgray_X(halforg);
-            Mat sobel_X_rgb = new Mat();
-            Imgproc.cvtColor(sobel_X, sobel_X_rgb, Imgproc.COLOR_GRAY2BGRA);
-            Mat erode_X = addone_imageprocess.erode_X(sobel_X);
-            Mat erode_X_rgb = new Mat();
-            Imgproc.cvtColor(erode_X, erode_X_rgb, Imgproc.COLOR_GRAY2BGRA);
-            Mat dilate_X = addone_imageprocess.dilate_X(erode_X);
-            Mat dilate_X_rgb = new Mat();
-            Imgproc.cvtColor(dilate_X, dilate_X_rgb, Imgproc.COLOR_GRAY2BGRA);
-
-
-            Mat tile_sobelXY = new Mat();
-            Mat tile = new Mat();
-            Imgproc.cvtColor(halforg, tile_sobelXY, Imgproc.COLOR_RGB2GRAY);
-            Mat grayrgb = new Mat();
-            Mat graymask = new Mat();
-//            Core.inRange(tile_sobelXY,new Scalar(245), new Scalar(255), graymask);
-            Imgproc.cvtColor(tile_sobelXY, grayrgb, Imgproc.COLOR_GRAY2BGRA);
-
-            tile_sobelXY = addone_imageprocess.sobel_outputgray_XY_noGaussianBlur(tile_sobelXY);
-            Mat tile_sobelXYrgb = new Mat();
-            Imgproc.cvtColor(tile_sobelXY, tile_sobelXYrgb, Imgproc.COLOR_GRAY2BGRA);
-
-            tile = addone_imageprocess.Tile_dilate(tile_sobelXY);
-            Mat tile_dilatergb = new Mat();
-            Imgproc.cvtColor(tile, tile_dilatergb, Imgproc.COLOR_GRAY2BGRA);
-            tile = addone_imageprocess.Tile_erode(tile);
-            Mat tile_erodergb = new Mat();
-            Imgproc.cvtColor(tile, tile_erodergb, Imgproc.COLOR_GRAY2BGRA);
-            tile = addone_imageprocess.Tile_dilate2(tile);
-            tile = addone_imageprocess.Tile_erode2(tile);
-            Mat tile_2rgb = new Mat();
-            Imgproc.cvtColor(tile, tile_2rgb, Imgproc.COLOR_GRAY2BGRA);
-
-
-            Mat bodyhsv_rgb = addone_imageprocess.body_hsv(halforg);
-            Mat bodyrgb_rgb = addone_imageprocess.body_rgb(halforg);
-
-            Mat arow = addone_imageprocess.getcol(dilate_Y, 50);
-            Mat arow_rgb = new Mat();
-            Imgproc.cvtColor(arow,arow_rgb, Imgproc.COLOR_GRAY2BGRA);
-
-
-            Mat Y_imgrgb = new Mat();
-            Y_imgrgb = addone_imageprocess.sobel_outputgray_Y_complet(halforg);
-            Imgproc.cvtColor(Y_imgrgb, Y_imgrgb, Imgproc.COLOR_GRAY2BGRA);
-            Mat X_imgrgb = new Mat();
-            X_imgrgb = addone_imageprocess.sobel_outputgray_X_complet(halforg);
-            Imgproc.cvtColor(X_imgrgb, X_imgrgb, Imgproc.COLOR_GRAY2BGRA);
+//            Mat hsv_h_canny = new Mat();
+//            Imgproc.GaussianBlur(hsv_h, hsv_h_canny, new Size(3, 3), 3, 3);
+//            Imgproc.Canny(hsv_h_canny, hsv_h_canny, 80, 100);
+//            Imgproc.cvtColor(hsv_h_canny, hsv_h_canny, Imgproc.COLOR_GRAY2BGRA);
+//
+//            Mat sobel_Y = new Mat();
+//            sobel_Y = addone_imageprocess.sobel_outputgray_Y(halforg);
+//            Mat sobel_Y_rgb = new Mat();
+//            Imgproc.cvtColor(sobel_Y, sobel_Y_rgb, Imgproc.COLOR_GRAY2BGRA);
+//            Mat erode_Y = new Mat();
+//            erode_Y = addone_imageprocess.erode_Y(sobel_Y);
+//            Mat erode_Y_rgb = new Mat();
+//            Imgproc.cvtColor(erode_Y, erode_Y_rgb, Imgproc.COLOR_GRAY2BGRA);
+//            Mat dilate_Y = new Mat();
+//            dilate_Y = addone_imageprocess.dilate_Y(erode_Y);
+//            Mat dilate_Y_rgb = new Mat();
+//            Imgproc.cvtColor(dilate_Y, dilate_Y_rgb, Imgproc.COLOR_GRAY2BGRA);
+//
+//            Mat sobel_X = addone_imageprocess.sobel_outputgray_X(halforg);
+//            Mat sobel_X_rgb = new Mat();
+//            Imgproc.cvtColor(sobel_X, sobel_X_rgb, Imgproc.COLOR_GRAY2BGRA);
+//            Mat erode_X = addone_imageprocess.erode_X(sobel_X);
+//            Mat erode_X_rgb = new Mat();
+//            Imgproc.cvtColor(erode_X, erode_X_rgb, Imgproc.COLOR_GRAY2BGRA);
+//            Mat dilate_X = addone_imageprocess.dilate_X(erode_X);
+//            Mat dilate_X_rgb = new Mat();
+//            Imgproc.cvtColor(dilate_X, dilate_X_rgb, Imgproc.COLOR_GRAY2BGRA);
+//
+//
+//            Mat tile_sobelXY = new Mat();
+//            Mat tile = new Mat();
+//            Imgproc.cvtColor(halforg, tile_sobelXY, Imgproc.COLOR_RGB2GRAY);
+//            Mat grayrgb = new Mat();
+//            Mat graymask = new Mat();
+////            Core.inRange(tile_sobelXY,new Scalar(245), new Scalar(255), graymask);
+//            Imgproc.cvtColor(tile_sobelXY, grayrgb, Imgproc.COLOR_GRAY2BGRA);
+//
+//            tile_sobelXY = addone_imageprocess.sobel_outputgray_XY_noGaussianBlur(tile_sobelXY);
+//            Mat tile_sobelXYrgb = new Mat();
+//            Imgproc.cvtColor(tile_sobelXY, tile_sobelXYrgb, Imgproc.COLOR_GRAY2BGRA);
+//
+//            tile = addone_imageprocess.Tile_dilate(tile_sobelXY);
+//            Mat tile_dilatergb = new Mat();
+//            Imgproc.cvtColor(tile, tile_dilatergb, Imgproc.COLOR_GRAY2BGRA);
+//            tile = addone_imageprocess.Tile_erode(tile);
+//            Mat tile_erodergb = new Mat();
+//            Imgproc.cvtColor(tile, tile_erodergb, Imgproc.COLOR_GRAY2BGRA);
+//            tile = addone_imageprocess.Tile_dilate2(tile);
+//            tile = addone_imageprocess.Tile_erode2(tile);
+//            Mat tile_2rgb = new Mat();
+//            Imgproc.cvtColor(tile, tile_2rgb, Imgproc.COLOR_GRAY2BGRA);
+//
+//
+//            Mat bodyhsv_rgb = addone_imageprocess.body_hsv(halforg);
+////            Mat bodyrgb_rgb = addone_imageprocess.body_rgb(halforg);
+//
+//            Mat arow = addone_imageprocess.getcol(dilate_Y, 50);
+//            Mat arow_rgb = new Mat();
+//            Imgproc.cvtColor(arow,arow_rgb, Imgproc.COLOR_GRAY2BGRA);
+//
+//
+//            Mat Y_imgrgb = new Mat();
+//            Y_imgrgb = addone_imageprocess.sobel_outputgray_Y_complet(halforg);
+//            Imgproc.cvtColor(Y_imgrgb, Y_imgrgb, Imgproc.COLOR_GRAY2BGRA);
+//            Mat X_imgrgb = new Mat();
+//            X_imgrgb = addone_imageprocess.sobel_outputgray_X_complet(halforg);
+//            Imgproc.cvtColor(X_imgrgb, X_imgrgb, Imgproc.COLOR_GRAY2BGRA);
             //============================================================
 
             Log.i(TAG, "hconcat: star new list");
@@ -506,9 +532,9 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
             Log.i(TAG, "hconcat: finish!");
             countT.setText(valuetext);
 
-            List<Mat> src2 = Arrays.asList(tile_dilatergb, tile_2rgb ,  dilate_Y_rgb,  dilate_X_rgb, bodyhsv_rgb, Y_imgrgb, X_imgrgb);//tile_sobelXYrgb, tile_dilatergb, tile_erodergb, tile_2rgb);
-            Mat dst2 = new Mat();
-            Core.hconcat(src2, dst2);
+//            List<Mat> src2 = Arrays.asList(tile_dilatergb, tile_2rgb ,  dilate_Y_rgb,  dilate_X_rgb, bodyhsv_rgb, Y_imgrgb, X_imgrgb);//tile_sobelXYrgb, tile_dilatergb, tile_erodergb, tile_2rgb);
+//            Mat dst2 = new Mat();
+//            Core.hconcat(src2, dst2);
 
 //            dbhelper = new DBHelper(this);
             add();
@@ -527,16 +553,20 @@ String filePath = vSDCard.getCanonicalPath() + File.separator + "地面照片" +
             Log.i(TAG, "Finish: set image");
             outimage.setImageBitmap(bitmap);
 
-            bitmap = Bitmap.createBitmap(dst2.width(), dst2.height(), Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(dst2, bitmap);
-            outimage2.setImageBitmap(bitmap);
+//            bitmap = Bitmap.createBitmap(dst2.width(), dst2.height(), Bitmap.Config.ARGB_8888);
+//            Utils.matToBitmap(dst2, bitmap);
+//            outimage2.setImageBitmap(bitmap);
 
 //            Imgproc.resize(arow_rgb, arow_rgb, new Size(10, 240));
 //            bitmap = Bitmap.createBitmap(arow_rgb.width(), arow_rgb.height(), Bitmap.Config.ARGB_8888);
 //            Utils.matToBitmap(arow_rgb, bitmap);
 //            rowimg.setImageBitmap(bitmap);
 
-            Mat getline = addone_imageprocess.HoughLines(halforg);
+
+            Mat showtile = addone_imageprocess.clear_tile(halforg);
+            Mat getline = new Mat();
+            getline = addone_imageprocess.HoughLines(halforg, showtile, changevalue);
+
             bitmap = Bitmap.createBitmap(getline.width(), getline.height(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(getline, bitmap);
             rowimg.setImageBitmap(bitmap);

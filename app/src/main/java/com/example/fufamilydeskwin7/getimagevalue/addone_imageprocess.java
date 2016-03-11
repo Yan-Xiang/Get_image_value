@@ -92,7 +92,7 @@ public class addone_imageprocess {
     public static Mat sobel_outputgray_XY_noGaussianBlur(Mat img) {
         Mat tmp = new Mat();
 //        Imgproc.cvtColor(img, tmp, Imgproc.COLOR_RGB2GRAY);
-        Imgproc.GaussianBlur(tmp, tmp, new Size(3, 3), 5, 5);
+//        Imgproc.GaussianBlur(tmp, tmp, new Size(3, 3), 5, 5);
         Imgproc.Sobel(img, tmp, CvType.CV_8U, 1, 0);
 
         Core.convertScaleAbs(tmp, tmp, 10, 0);
@@ -230,24 +230,24 @@ public class addone_imageprocess {
         return outputcol;
     }
 
-    public static Mat HoughLines(Mat img) {
+    public static Mat HoughLines(Mat img, Mat mask, int changvalue) {
+        Mat doimg = new Mat();
         Mat G7_C80100 = new Mat();
-        Imgproc.GaussianBlur(img, G7_C80100, new Size(7, 7), 3, 3);
+
+
+        Imgproc.GaussianBlur(img, G7_C80100, new Size(5, 5), 3, 3);
         Imgproc.Canny(G7_C80100, G7_C80100, 80, 100);
 
-//        Mat lines = new Mat();
-//        Imgproc.HoughLines(G7_C80100, lines, 5.0, 4.0, 7);
-//        return lines;
+        G7_C80100.copyTo(doimg, mask);
 
         Mat lines = new Mat();
-        int threshold = 40;
-        int minLineSize = 20;
-        int lineGap = 10;
+        int threshold = changvalue;//40
+        int minLineSize = 40;
+        int lineGap = 5;//5
 
-        Imgproc.HoughLinesP(G7_C80100, lines, 1, Math.PI/180, threshold, minLineSize, lineGap);
-
-        for (int x = 0; x < lines.cols(); x++)
-        {
+        Imgproc.HoughLinesP(doimg, lines, 1, Math.PI / 180, threshold, minLineSize, lineGap);
+        Imgproc.cvtColor(doimg, doimg, Imgproc.COLOR_GRAY2BGRA);
+        for (int x = 0; x < lines.cols(); x++) {
             double[] vec = lines.get(0, x);
             double x1 = vec[0],
                     y1 = vec[1],
@@ -256,10 +256,50 @@ public class addone_imageprocess {
             Point start = new Point(x1, y1);
             Point end = new Point(x2, y2);
 
-            Core.line(img, start, end, new Scalar(0,255,0), 2);
+            Core.line(doimg, start, end, new Scalar(255, 0, 0), 2);
 
         }
-        return img;
+        return doimg;
     }
+
+    public static Mat clear_tile(Mat img) {
+//        Mat tile_sobelXY = new Mat();
+//
+//        Imgproc.cvtColor(img, tile_sobelXY, Imgproc.COLOR_RGB2GRAY);
+//        Mat tile = new Mat();
+//        tile_sobelXY = addone_imageprocess.sobel_outputgray_XY_noGaussianBlur(tile_sobelXY);
+//        tile =  addone_imageprocess.Tile_dilate(tile_sobelXY);
+//        tile = addone_imageprocess.Tile_erode(tile);
+//        tile = addone_imageprocess.Tile_dilate2(tile);
+//        tile = addone_imageprocess.Tile_erode2(tile);
+//
+//        Core.bitwise_not(tile, tile);
+//        img.copyTo(img, tile);
+//        return img;
+
+
+        Mat tmp = new Mat();
+        Imgproc.cvtColor(img, tmp, Imgproc.COLOR_RGB2GRAY);
+        Imgproc.Sobel(tmp, tmp, CvType.CV_8U, 1, 1);
+        Core.convertScaleAbs(tmp, tmp, 10, 0);
+        Mat onelayer = new Mat();
+        Core.inRange(tmp, new Scalar(240), new Scalar(255), onelayer);
+
+        Imgproc.dilate(onelayer, onelayer, Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, new Size(3, 3)), new Point(-1, -1), 3);
+        Core.inRange(onelayer, new Scalar(250), new Scalar(255), onelayer);
+        Imgproc.erode(onelayer, onelayer, Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, new Size(10, 10)), new Point(-1, -1), 1);
+        Core.inRange(onelayer, new Scalar(253), new Scalar(255), onelayer);
+        Imgproc.dilate(onelayer, onelayer, Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, new Size(7, 7)), new Point(-1, -1), 3);
+        Core.inRange(onelayer, new Scalar(250), new Scalar(255), onelayer);
+        Imgproc.erode(onelayer, onelayer, Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, new Size(20, 20)), new Point(-1, -1), 1);
+        Core.inRange(onelayer, new Scalar(253), new Scalar(255), onelayer);
+        Core.bitwise_not(onelayer, onelayer);
+//        Mat output = new Mat();
+//        img.copyTo(output, onelayer);
+//        Imgproc.cvtColor(onelayer, output, Imgproc.COLOR_GRAY2BGRA);
+        return onelayer;
+
+    }
+
 
 }
